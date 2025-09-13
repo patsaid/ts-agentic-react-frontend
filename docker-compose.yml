@@ -1,0 +1,12 @@
+services:
+  frontend:
+    build:
+      context: ./
+    ports:
+      - '5173:5173'
+    environment:
+      - VITE_API_URL=http://localhost:3000
+    volumes:
+      - ./:/app # Mount local files into container
+      - /app/node_modules # Keep container's node_modules separate
+    command: npm run dev # Start dev server
