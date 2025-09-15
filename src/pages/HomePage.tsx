@@ -1,12 +1,47 @@
 import React from 'react';
+import Agent from '../components/Agent';
+import '../styles/global.css';
 
-export default function HomePage() {
+type Conversation = {
+  id: number;
+  messages: { question: string; answer: string }[];
+};
+
+type HomePageProps = {
+  conversations: Conversation[];
+  activeConversationId: number;
+  setConversations: React.Dispatch<React.SetStateAction<Conversation[]>>;
+};
+
+export default function HomePage({
+  conversations,
+  activeConversationId,
+  setConversations,
+}: HomePageProps) {
+  const activeConversation = conversations.find((c) => c.id === activeConversationId);
+
+  const handleNewAnswer = (question: string, answer: string) => {
+    if (!activeConversation) return;
+
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id === activeConversation.id
+          ? { ...c, messages: [...c.messages, { question, answer }] }
+          : c
+      )
+    );
+  };
+
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Welcome to the Agent Demo</h1>
-      <p className="text-gray-700">
-        Use the navigation to <strong>register users</strong> or <strong>ask the agent</strong>.
-      </p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      {activeConversation ? (
+        <Agent
+          conversation={activeConversation}
+          onAnswer={handleNewAnswer}
+        />
+      ) : (
+        <p>No conversation selected.</p>
+      )}
     </div>
   );
 }

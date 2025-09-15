@@ -42,30 +42,18 @@ main {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* === Navigation === */
-.nav {
-  background-color: #f0f0f0;
-  padding: 0.75rem 1rem;
-  display: flex;
-  gap: 1rem;
-}
-
-.nav a {
-  color: #3498db;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.nav a:hover {
-  text-decoration: underline;
-}
-
 /* === Forms === */
-input[type="text"] {
-  padding: 0.5rem;
+/* Apply same style to text, email, and password inputs */
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  margin: 0.25rem 0;
+  padding: 0.3rem 0.3rem;
   font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 4px;
+  width: 100%; /* optional, makes them full width in dropdown */
+  box-sizing: border-box; /* ensures padding doesn't break layout */
 }
 
 button {
@@ -82,6 +70,70 @@ button {
 button:hover {
   background-color: #2980b9;
 }
+
+/* === Header === */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #ccc;
+  background-color: #fff;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.header-title {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #544e4e;
+}
+
+/* User icon container */
+.user-menu {
+  width: 30px;
+  height: 30px;
+  position: relative;
+  cursor: pointer;
+}
+
+/* User avatar when signed in */
+.user-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #3498db;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+/* Dropdown menu */
+.dropdown {
+  position: absolute;
+  right: 0;
+  margin-top: 1rem;
+  width: 220px;
+  padding: 1rem;
+  background-color: #fff;
+  color: #777;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 
 /* === Footer === */
 footer {

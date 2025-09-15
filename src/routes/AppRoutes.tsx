@@ -1,15 +1,32 @@
+// AppRoutes.tsx
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import Home from '../pages/HomePage';
-import Users from '../pages/UsersPage';
-import Agent from '../pages/AgentPage';
+import HomePage from '../pages/HomePage';
+import { Conversation } from '../App'; // import type if needed
 
-export default function AppRoutes() {
+type AppRoutesProps = {
+  conversations: Conversation[];
+  activeConversationId: number;
+  setConversations: React.Dispatch<React.SetStateAction<Conversation[]>>;
+};
+
+export default function AppRoutes({
+  conversations,
+  activeConversationId,
+  setConversations,
+}: AppRoutesProps) {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/users" element={<Users />} />
-      <Route path="/agent" element={<Agent />} />
+      <Route
+        path="/"
+        element={
+          <HomePage
+            conversations={conversations}
+            activeConversationId={activeConversationId}
+            setConversations={setConversations}
+          />
+        }
+      />
     </Routes>
   );
 }
