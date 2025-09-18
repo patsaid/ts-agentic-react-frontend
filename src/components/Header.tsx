@@ -2,19 +2,50 @@ import React, { useState, useContext } from 'react';
 import { FaRobot, FaUserCircle } from 'react-icons/fa';
 import '../styles/global.css';
 import { AuthContext } from '../context/AuthContext';
+import { createUser, loginUser } from '../api/user-api';
 
 function Header() {
   const auth = useContext(AuthContext);
   const isSignedIn = auth?.isSignedIn ?? false;
   const setIsSignedIn = auth?.setIsSignedIn;
+  const setUser = auth?.setUser;
+  const user = auth?.user;
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
 
-  const user = { name: 'Patrick', email: 'patrick@example.com' };
+  // form fields
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const handleAuth = () => {
-    if (setIsSignedIn) setIsSignedIn(!isSignedIn);
+  const handleSignOut = () => {
+    if (setIsSignedIn) setIsSignedIn(false);
+    if (setUser) setUser(null);
     setMenuOpen(false);
+  };
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const loggedInUser = await loginUser({ email, password });
+      if (setIsSignedIn) setIsSignedIn(true);
+      if (setUser) setUser({ ...loggedInUser, _id: loggedInUser._id ?? '' });
+      setMenuOpen(false);
+    } catch (err: any) {
+      alert(err.response?.data?.error || err.message);
+    }
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const newUser = await createUser({ email, password });
+      if (setIsSignedIn) setIsSignedIn(true);
+      if (setUser) setUser({ ...newUser, _id: newUser._id ?? '' });
+      setMenuOpen(false);
+    } catch (err: any) {
+      alert(err.response?.data?.error || err.message);
+    }
   };
 
   return (
@@ -28,8 +59,8 @@ function Header() {
       {/* Right: user */}
       <div className="user-menu">
         <div onClick={() => setMenuOpen(!menuOpen)} style={{ cursor: 'pointer' }}>
-          {isSignedIn ? (
-            <div className="user-avatar">{user.name.charAt(0).toUpperCase()}</div>
+          {isSignedIn && user ? (
+            <div className="user-avatar">{user.email.charAt(0).toUpperCase()}</div>
           ) : (
             <FaUserCircle size={30} color="#555" />
           )}
@@ -37,26 +68,40 @@ function Header() {
 
         {menuOpen && (
           <div className="dropdown">
-            {isSignedIn ? (
+            {isSignedIn && user ? (
               <>
                 <div>
-                  <p>{user.name}</p>
                   <p>{user.email}</p>
                 </div>
-                <button onClick={handleAuth}>Sign out</button>
+                <button onClick={handleSignOut}>Sign out</button>
               </>
             ) : (
               <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (setIsSignedIn) setIsSignedIn(true);
-                  setMenuOpen(false);
-                }}
+                onSubmit={isSignUp ? handleSignUp : handleSignIn}
                 style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}
               >
-                <input type="email" placeholder="Email" required />
-                <input type="password" placeholder="Password" required />
-                <button type="submit">Sign in</button>
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button type="submit">{isSignUp ? 'Sign up' : 'Sign in'}</button>
+                <button
+                  type="button"
+                  onClick={() => setIsSignUp(!isSignUp)}
+                  style={{ marginTop: '0.5rem' }}
+                >
+                  {isSignUp ? 'Already have an account? Sign in' : 'No account? Sign up'}
+                </button>
               </form>
             )}
           </div>

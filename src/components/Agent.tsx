@@ -1,43 +1,73 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { askAgent } from '../api/agent-api';
-import LoadingSpinner from './LoadingSpinner';
-import '../styles/global.css';
+import { AuthContext } from '../context/AuthContext';
+import { useConversation } from '../context/ConversationContext';
 
-type AgentProps = {
-  onAnswer: (question: string, answer: string) => void;
-};
-
-export default function Agent({ onAnswer }: AgentProps) {
+export default function Agent() {
+  const { user, isSignedIn } = useContext(AuthContext)!; // ✅ useContext directly
+  const { conversations, setConversations, activeConversationId, setActiveConversationId } = useConversation();
   const [question, setQuestion] = useState('');
   const [loading, setLoading] = useState(false);
 
+  if (!isSignedIn || !user) return <p>Please sign in to chat with the agent.</p>;
+
   const handleAsk = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!question.trim()) return;
     setLoading(true);
+
     try {
-      const result = await askAgent(question);
-      onAnswer(question, result); // pass conversation to parent
+      const res = await askAgent(user._id, question, activeConversationId ?? undefined);
+      const newMessage = { question, answer: res.answer };
+
+      let updatedConversations = [...conversations];
+
+      if (activeConversationId) {
+        updatedConversations = updatedConversations.map((c) =>
+          c._id === activeConversationId ? { ...c, messages: [...c.messages, newMessage] } : c
+        );
+      } else {
+        const newConversation = { _id: res.conversationId, messages: [newMessage] };
+        updatedConversations.unshift(newConversation);
+        setActiveConversationId(res.conversationId);
+      }
+
+      setConversations(updatedConversations);
+      setQuestion('');
+    } catch (err: any) {
+      alert(err.response?.data?.error || err.message);
     } finally {
       setLoading(false);
-      setQuestion('');
     }
   };
 
+  const activeConversation = conversations.find(c => c._id === activeConversationId);
+
   return (
-    <div>
-      <h1>Ask the Agent</h1>
-      <form onSubmit={handleAsk}>
+    <div style={{ padding: '1rem', flex: 1 }}>
+      <h2>Agent Chat</h2>
+
+      <form onSubmit={handleAsk} style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem' }}>
         <input
           type="text"
           placeholder="Ask a question..."
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          required
+          style={{ flex: 1, padding: '0.5rem' }}
+          disabled={loading}
         />
-        <button type="submit">Ask</button>
+        <button type="submit" disabled={loading}>{loading ? 'Sending...' : 'Ask'}</button>
       </form>
 
-      {loading && <LoadingSpinner />}
+      {!activeConversation && <p>Select a conversation or start a new one.</p>}
+
+      {activeConversation?.messages.map((m, i) => (
+        <div key={i} style={{ marginBottom: '0.5rem' }}>
+          <strong>Q:</strong> {m.question}
+          <br />
+          <strong>A:</strong> {m.answer}
+        </div>
+      ))}
     </div>
   );
 }
